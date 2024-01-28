@@ -16,20 +16,15 @@ class RealWorldController extends Controller
         Article::create([
             'title' => $request->title,
             'slug' => Str::slug($request->title, '-'),
-            // 'summary' => $request->summary,
             'summary' => $request->summary,
             'body' => $request->body,
             'tagList' => $request->tagList,
         ]);
-
-
-        // return response()->json(Article::all());
     }
 
     public function getArticles($id)
     {
         $article = Article::with('user')->find($id);
-        // $comments = PostForm::with('user')->find($id);
         $comments = PostForm::with('user')->where('article_id', '=', $id)->get();
         $data = [
             'article' => $article,
