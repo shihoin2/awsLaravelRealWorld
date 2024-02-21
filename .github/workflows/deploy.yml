@@ -1,0 +1,42 @@
+name: Deploy to Amazon EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      REMOTE_USER: ${{ secrets.REMOTE_USER }}
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml
+        coverage: none
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: Deploy to Amazon EC2
+      uses: easingthemes/ssh-deploy@v2.1.5
+      with:
+        SOURCE: '.'
+        TARGET: '/home/ec2-user/apprentice-CICD-2'
+        EXCLUDE: '/.github/,/vendor/,/.env'
+
+    - name: Deploy and Start PHP Built-in Server
+      run: |
+        echo "$SSH_PRIVATE_KEY" > private_key
+        chmod 600 private_key
+        ssh -o StrictHostKeyChecking=no -i private_key $REMOTE_USER@$REMOTE_HOST << 'EOF'
+          cd /home/ec2-user/apprentice-CICD-2
+          nohup php -S 0.0.0.0:8080 -t . > /dev/null 2>&1 &
+        EOF
