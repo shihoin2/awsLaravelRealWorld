@@ -18,7 +18,7 @@ jobs:
     - name: Set up PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.1'
+        php-version: '8.2.9'
         extensions: mbstring, xml
         coverage: none
 
@@ -29,7 +29,7 @@ jobs:
       uses: easingthemes/ssh-deploy@v2.1.5
       with:
         SOURCE: '.'
-        TARGET: '/home/ec2-user/apprentice-CICD-2'
+        TARGET: '/var/www/laravelRealWorld/'
         EXCLUDE: '/.github/,/vendor/,/.env'
 
     - name: Deploy and Start PHP Built-in Server
@@ -37,6 +37,3 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > private_key
         chmod 600 private_key
         ssh -o StrictHostKeyChecking=no -i private_key $REMOTE_USER@$REMOTE_HOST << 'EOF'
-          cd /home/ec2-user/apprentice-CICD-2
-          nohup php -S 0.0.0.0:8080 -t . > /dev/null 2>&1 &
-        EOF
